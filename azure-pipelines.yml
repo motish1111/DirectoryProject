@@ -1,0 +1,74 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  containerRegistryServiceConnection: Docker_sandeep
+  imageRepository: motish12/back-end
+  tag: azure_test
+  imageName: 'back-end'
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    version: '3.1.x'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: restore
+    projects: '**/back-end/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: '**/back-end/*.csproj'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: publish
+    publishWebProjects: True
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: False
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
+    artifactName: 'Back_End_Website'
+    
+
+- task: Docker@2
+  inputs:
+    command: login
+    containerRegistry: $(containerRegistryServiceConnection)
+
+- task: Docker@2
+  displayName: Build an image
+  inputs:
+    command: build
+    buildContext: $(Build.ArtifactStagingDirectory)
+    containerRegistry: $(containerRegistryServiceConnection)
+    repository: $(imageRepository)
+    tags: |
+      $(tag)
+    Dockerfile: /**/Dockerfile_Azure_CI
+
+- task: Docker@2
+  displayName: Push image
+  inputs:
+    containerRegistry: $(containerRegistryServiceConnection)
+    repository: $(imageRepository)
+    command: push
+    tags: |
+      $(tag)
+
+- script: |
+    echo Heya!! I am here!! Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
