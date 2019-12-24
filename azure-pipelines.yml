@@ -10,7 +10,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  containerRegistryServiceConnection: Docker_sandeep
+  containerRegistryServiceConnection: Docker_Motish
   imageRepository: motish12/back-end
   tag: azure_test
   imageName: 'back-end'
