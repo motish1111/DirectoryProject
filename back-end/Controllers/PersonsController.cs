@@ -16,7 +16,10 @@ namespace back_end.Controllers {
 
         public PersonsController(ApplicationDbContext context) {
             _context = context;
-            _context.Database.Migrate();
+
+            if (_context.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory") {
+                _context.Database.Migrate();
+            }
         }
 
         [HttpGet]
