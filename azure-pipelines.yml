@@ -31,6 +31,13 @@ steps:
     projects: '**/back-end/*.csproj'
 
 - task: DotNetCoreCLI@2
+  displayName: Unit Test
+  inputs:
+    command: test
+    projects: '**/*UnitTests/*.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+
+- task: DotNetCoreCLI@2
   inputs:
     command: publish
     publishWebProjects: True
