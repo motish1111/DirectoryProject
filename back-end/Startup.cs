@@ -12,6 +12,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using back_end.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using IdentityModel;
 
 namespace back_end
 {
@@ -29,7 +31,7 @@ namespace back_end
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            List<string> allowedOrigins = new List<string>(){"https://localhost:4100", "http://localhost:4100", "https://localhost:4200", "http://localhost:4200" };
+            List<string> allowedOrigins = new List<string>(){"http://localhost:3000","https://localhost:3000","https://localhost:4100", "http://localhost:4100", "https://localhost:4200", "http://localhost:4200" };
             services.AddCors(options => {
                 options.AddPolicy(MyAllowSpecificOrigins,
                 builder => {
@@ -44,7 +46,24 @@ namespace back_end
                         .AllowAnyMethod();
                 });
             });
-            
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.Authority = "https://vais-sin.stg-varian.io/vais/token";
+                options.RequireHttpsMetadata = false;
+                options.Audience = "Varian/VAIS/ConfigService";
+            });
+
+            // services.AddAuthorization(options =>
+            // {
+            //     options.AddPolicy("motishPolicy", policy =>
+            //         policy.AddAuthenticationSchemes("Bearer")
+            //             .RequireClaim(JwtClaimTypes.Scope, "Varian/VAIS/ConfigService/All")
+            //     );
+            // })
+            // .AddMvc();
+
             services.AddDbContext<ApplicationDbContext>(options => 
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")) );
             services.AddControllers();
@@ -64,6 +83,7 @@ namespace back_end
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
